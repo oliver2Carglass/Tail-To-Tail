@@ -27,6 +27,9 @@ class Client:
                     self.message = message
                     self.background_color = (0, 50, 0)  # Changer la couleur de fond en vert
                     self.create_button()  # Créer le bouton une fois la connexion établie
+                elif message == "Les deux joueurs sont prêts":
+                    self.background_color = (0, 255, 0)  # Passer le fond en vert
+                    # ici on clear tout et on affiche le jeu 
             except:
                 break
 
@@ -38,6 +41,7 @@ class Client:
         """Vérifie si le bouton a été cliqué."""
         if self.button_rect.collidepoint(mouse_pos):
             print("Bouton cliqué !")  # Action à effectuer lors du clic sur le bouton
+            self.client_socket.send("Le joueur est prêt".encode())  # Indique que le joueur est prêt
 
     def start(self):
         """Lance l'interface graphique."""
