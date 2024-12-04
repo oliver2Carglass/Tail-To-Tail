@@ -2,7 +2,7 @@ from Player import Player
 
 class Game:
     def __init__(self, max_steps=3):
-        self.grid_size = 9
+        self.grid_size = 3
         self.grid = [[0 for _ in range(9)] for _ in range(9)]
         self.max_steps = max_steps
     
@@ -24,35 +24,40 @@ class Game:
             print(" ".join(str(cell) if cell != 0 else '.' for cell in row))
         print()
 
-    def play_turn(self, player):
+
+    
+    def winning(self, g1, g2):
         """
-        Gère un tour de jeu pour un joueur.
-        Le joueur effectue 3 mouvements à l'avance, et chaque mouvement est vérifié avant d'être appliqué.
+        Détecte si la partie est gagnante ou pas
+        Retourne 1 si j1 gagne
+        retourne 2 si j2 gagne
+        retourne 3 si egalité
+        retourne 0 si rien
         """
-        print(f"Tour du joueur {player.player_id} ({player.color}):")
-        
-        # Demander 3 mouvements au joueur
-        moves = []
-        for i in range(3):
-            valid_move = False
-            while not valid_move:
-                print(f"Entrez le mouvement {i + 1} (left, right, up, down) :")
-                direction = input("Mouvement: ").strip().lower()
-                if direction in ["left", "right", "up", "down"]:
-                    # Vérifier si le mouvement est valide
-                    if player.canMove(direction):
-                        # Appliquer le mouvement si valide
-                        player.move(direction)
-                        moves.append(direction)
-                        valid_move = True
+        # Vérifier si une collision a eu lieu
+        for i in range(self.grid_size):
+            for j in range(self.grid_size):
+                if g1[i][j] != 0 and g2[i][j] != 0:  # Collision détectée si les deux joueurs occupent la même case
+                    distance_g1 = abs(g1[i][j])  
+                    distance_g2 = abs(g2[i][j]) 
+                    # Comparer les distances
+                    if distance_g1 > distance_g2:
+                        return 1  # Joueur 1 gagne
+                    elif distance_g2 > distance_g1:
+                        return 2  # Joueur 2 gagne
                     else:
-                        print("Mouvement invalide ! Vous ne pouvez pas marcher sur votre propre chemin ou sortir de la grille.")
-                else:
-                    print("Direction invalide. Entrez 'left', 'right', 'up' ou 'down'.")
+                        return 3  # Égalité (distances égales)
+        return 0
+
+    def start(self):
+        player1 = Player(1)
+        player2 = Player(2)
         
-        # Mettre à jour la grille
-        self.mergeGrid(player.get_grid_state(), self.grid)
-        print(f"Le joueur {player.player_id} a effectué les mouvements suivants : {moves}")
+
+        
+        
+            
+            
 
 
 
@@ -80,7 +85,11 @@ if __name__ == "__main__":
     player1 = Player(1)
     player2 = Player(2)
     game = Game()
+    g1=[[0,1,2],
+        [0,4,3],
+        [0,0,0]
+        ]
+    g2=[[0,0,0],[0,0,0],[0,-1,0]]
+    print(game.winning(g1,g2))
 
-    # Jouer un tour pour chaque joueur
-    game.play_turn(player1)
-    game.play_turn(player2)
+
