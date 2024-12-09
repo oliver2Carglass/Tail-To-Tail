@@ -1,0 +1,65 @@
+import socket
+import threading
+
+class GameServer:
+    def __init__(self):
+        self.players = []  # Liste des connexions des joueurs
+        self.turn = 0  # Tour du joueur (0 ou 1)
+        self.steps = [0, 0]  # Compteur de pas pour chaque joueur
+        self.max_steps = 3  # Nombre de déplacements par joueur par tour
+        self.positions = [[8, 4], [0, 4]]  # Positions initiales des joueurs
+
+    def handle_player(self, conn, player_id):
+        """Gère la communication avec chaque joueur"""
+        # Envoie la position de départ et la couleur au joueur
+        conn.send(f"Vous êtes le joueur {player_id + 1}".encode())
+        conn.send(f"Votre position de départ est {self.positions[player_id]}".encode())
+
+        # Indiquer la couleur
+        color = "green" if player_id == 0 else "red"
+        conn.send(f"Votre couleur est {color}".encode())
+
+        while True:
+            # Attends que le joueur fasse un mouvement
+            move = conn.recv(1024).decode()
+            if not move:
+                break
+            print(f"Joueur {player_id + 1} a fait un mouvement : {move}")
+
+            # Incrémente les pas du joueur
+            self.steps[player_id] += 1
+
+            # Si le joueur a fait ses 3 déplacements, signaler à l'autre joueur
+            if self.steps[player_id] >= self.max_steps:
+                self.steps[player_id] = 0  # Reset du compteur
+                if self.turn == 0:
+                    self.turn = 1  # Passer au joueur 2
+                else:
+                    self.turn = 0  # Repasser au joueur 1
+
+                # Signaler aux deux joueurs que le tour est terminé
+                self.notify_players()
+
+    def notify_players(self):
+        """Notifier les joueurs que le tour est terminé et qu'ils peuvent jouer"""
+        for player in self.players:
+            player.send(f"Tour terminé. C'est à votre tour maintenant!".encode())
+
+    def start_server(self):
+        """Démarre le serveur et accepte les connexions"""
+        host = 'localhost'
+        port = 12345
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind((host, port))
+        server_socket.listen(2)
+        print("Serveur en attente de connexions...")
+
+        while len(self.players) < 2:
+            conn, addr = server_socket.accept()
+            print(f"Connexion établie avec {addr}")
+            self.players.append(conn)
+            threading.Thread(target=self.handle_player, args=(conn, len(self.players)-1)).start()
+
+if __name__ == "__main__":
+    server = GameServer()
+    server.start_server()

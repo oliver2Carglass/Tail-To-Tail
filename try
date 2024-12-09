@@ -1,0 +1,119 @@
+class Game:
+    def __init__(self, grid_size=9, max_steps=3):
+        self.grid_size = grid_size
+        self.grid = [[0 for _ in range(grid_size)] for _ in range(grid_size)]
+        self.players_positions = {}
+        self.steps = {1: 0, 2: 0}
+        self.max_steps = max_steps
+        self.players_moves = {1: [], 2: []}
+
+    def initialize_player(self, player_id, start_position, color):
+        """Initialise la position et la couleur d'un joueur."""
+        self.players_positions[player_id] = {
+            "position": start_position,
+            "color": color,
+        }
+        # Le joueur 1 laisse une trainée de "1" et le joueur 2 une trainée de "2"
+        self.grid[start_position[0]][start_position[1]] = player_id
+
+    def move_player(self, player_id, direction):
+        """Déplace un joueur selon la direction, et laisse une trainée derrière lui."""
+        current_position = self.players_positions[player_id]["position"]
+        next_position = current_position[:]
+
+        # Calcul de la nouvelle position
+        if direction == "left":
+            next_position[1] = max(0, current_position[1] - 1)
+        elif direction == "right":
+            next_position[1] = min(self.grid_size - 1, current_position[1] + 1)
+        elif direction == "up":
+            next_position[0] = max(0, current_position[0] - 1)
+        elif direction == "down":
+            next_position[0] = min(self.grid_size - 1, current_position[0] + 1)
+
+        # Vérifier si la case est déjà occupée par une autre trainée (d'un autre joueur)
+        if self.grid[next_position[0]][next_position[1]] != 0 and self.grid[next_position[0]][next_position[1]] != player_id:
+            return False  # Collision avec un autre joueur
+
+        # Laisser une trainée sur la case actuelle (avant déplacement)
+        self.grid[current_position[0]][current_position[1]] = player_id
+
+        # Mettre à jour la position du joueur
+        self.players_positions[player_id]["position"] = next_position
+
+        # La nouvelle case devient la position actuelle du joueur
+        self.grid[next_position[0]][next_position[1]] = player_id
+        self.steps[player_id] += 1
+        return True
+
+    def is_turn_valid(self, player_id):
+        """Vérifie si le joueur peut encore jouer, selon son nombre de pas max."""
+        return self.steps[player_id] < self.max_steps
+
+    def print_grid(self):
+        """Affiche la grille dans la console pour debug."""
+        for row in self.grid:
+            print(" ".join(map(str, row)))
+        print()
+
+    def plan_moves(self, player_id, moves):
+        """Planifie les 3 mouvements pour un joueur."""
+        if len(moves) == 3:
+            self.players_moves[player_id] = moves
+        else:
+            print(f"Le joueur {player_id} doit planifier 3 mouvements.")
+
+    def play_turn(self, player_id):
+        """Joue un tour pour un joueur avec ses 3 mouvements."""
+        moves = self.players_moves[player_id]
+        print(f"Joueur {player_id} joue ses mouvements : {moves}")
+
+        for move in moves:
+            if not self.move_player(player_id, move):
+                print(f"Joueur {player_id} a tenté de se déplacer de manière invalide.")
+                return False  # Si un mouvement est invalide (collision), on arrête
+
+        return True
+
+    def check_game_over(self):
+        """Vérifie si la partie est terminée (collision ou plus de mouvements possibles)."""
+        # Si les deux joueurs ont terminé leurs déplacements
+        if self.steps[1] == self.max_steps and self.steps[2] == self.max_steps:
+            # Vérifie si les deux joueurs sont sur la même case
+            if self.players_positions[1]["position"] == self.players_positions[2]["position"]:
+                return "Égalité!"
+            return "Fin de la partie !"
+
+        # Partie continue
+        return "Partie en cours"
+
+    def play_game(self):
+        """Exécute le jeu (alternance des tours des joueurs)."""
+        while True:
+            # Tour du joueur 1
+            if self.is_turn_valid(1):
+                print("Tour du Joueur 1 :")
+                if not self.play_turn(1):
+                    print("Collision ou mouvement invalide pour Joueur 1!")
+                    return "Joueur 2 a gagné!"
+            else:
+                print("Joueur 1 a terminé ses mouvements.")
+
+            # Tour du joueur 2
+            if self.is_turn_valid(2):
+                print("Tour du Joueur 2 :")
+                if not self.play_turn(2):
+                    print("Collision ou mouvement invalide pour Joueur 2!")
+                    return "Joueur 1 a gagné!"
+            else:
+                print("Joueur 2 a terminé ses mouvements.")
+
+            # Vérifier si le jeu est terminé
+            result = self.check_game_over()
+            print(result)
+            if result != "Partie en cours":
+                return result
+
+            # Afficher la grille après chaque tour
+            self.print_grid()
+

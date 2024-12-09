@@ -98,7 +98,29 @@ class Player:
 
     def get_grid_state(self):
         """Retourne une copie de l'état actuel de la grille."""
-        return [row[:] for row in self.grid]
+        return self.grid
+    def askDirection(self):
+        direction=input("up,down,right left")
+        allowed=["up","down","right","left"]
+        if direction in allowed :
+            return direction
+
+    def turn(self):
+        confirm=False
+        direction=[]
+        step=0
+        while step != 3 :
+            userDir=self.askDirection()
+            if self.canMove(userDir):
+                direction.append(userDir)
+                step+=1
+        confirm=True
+        for i in direction:
+            self.move(i)
+        
+
+        return self.get_grid_state
+
 
 
 def display_grid(grid):
@@ -112,10 +134,7 @@ def display_grid(grid):
 if __name__ == '__main__':
     player1 = Player(1)
     player2 = Player(2)
-    
-    player1.move("up")  # Joueur 1 déplace vers le haut
-    player2.move("down")  # Joueur 2 déplace vers le bas
-    player2.move("down")
+    print(type(player1.turn()))
     
     display_grid(player1.get_grid_state())  # Afficher la grille de joueur 1
     display_grid(player2.get_grid_state())  # Afficher la grille de joueur 2

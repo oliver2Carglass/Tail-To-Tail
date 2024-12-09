@@ -1,0 +1,114 @@
+import pygame
+import socket
+
+class GameClient:
+    def __init__(self):
+        self.grid = [[0 for _ in range(9)] for _ in range(9)]
+        self.positionPlayer = [8, 4]  # Joueur 1 commence en [8, 4]
+        self.grid[self.positionPlayer[0]][self.positionPlayer[1]] = 1
+        self.steps = 0
+        self.max_steps = 3
+        self.color = (0, 255, 0)  # Couleur par défaut (vert pour joueur 1)
+
+    def printGrid(self):
+        """Affiche la grille dans la console"""
+        for row in self.grid:
+            print(" ".join(map(str, row)))
+        print()
+
+    def playStep(self, direction):
+        """Mise à jour de la position du joueur en fonction de la direction"""
+        next_position = self.positionPlayer[:]
+        if direction == "left":
+            next_position[1] = max(0, self.positionPlayer[1] - 1)
+        elif direction == "right":
+            next_position[1] = min(8, self.positionPlayer[1] + 1)
+        elif direction == "up":
+            next_position[0] = max(0, self.positionPlayer[0] - 1)
+        elif direction == "down":
+            next_position[0] = min(8, self.positionPlayer[0] + 1)
+
+        if self.grid[next_position[0]][next_position[1]] == 1:
+            print("Vous ne pouvez pas repasser sur une case déjà visitée.")
+            return False
+
+        self.positionPlayer = next_position
+        self.grid[self.positionPlayer[0]][self.positionPlayer[1]] = 1
+        self.steps += 1
+        return True
+
+    def drawGrid(self, screen):
+        """Dessine la grille dans une fenêtre pygame"""
+        screen.fill((0, 0, 0))  # Fond noir
+        cell_size = 50
+        for row in range(9):
+            for col in range(9):
+                color = (255, 255, 255) if self.grid[row][col] == 0 else self.color
+                pygame.draw.rect(screen, color, pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size))
+        pygame.display.flip()
+
+    def start_client(self):
+        pygame.init()
+        screen = pygame.display.set_mode((450, 450))
+        pygame.display.set_caption("Snake Multijoueur")
+
+        # Connexion au serveur
+        host = 'localhost'
+        port = 12345
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((host, port))
+
+        # Recevoir les informations initiales du serveur
+        initial_message = client_socket.recv(1024).decode()
+        print(initial_message)
+        position_message = client_socket.recv(1024).decode()
+        print(position_message)
+        color_message = client_socket.recv(1024).decode()
+        print(color_message)
+
+        # Extraire la couleur et la position initiale
+        if "vert" in color_message:
+            self.color = (0, 255, 0)  # Vert pour le joueur 1
+        elif "rouge" in color_message:
+            self.color = (255, 0, 0)  # Rouge pour le joueur 2
+        
+        # Extraire la position initiale
+        if "0, 4" in position_message:
+            self.positionPlayer = [0, 4]
+        
+        self.grid[self.positionPlayer[0]][self.positionPlayer[1]] = 1
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    pygame.quit()
+
+                if event.type == pygame.KEYDOWN:
+                    if self.steps < self.max_steps:
+                        if event.key == pygame.K_LEFT:
+                            if self.playStep("left"):
+                                client_socket.send("left".encode())
+                        elif event.key == pygame.K_RIGHT:
+                            if self.playStep("right"):
+                                client_socket.send("right".encode())
+                        elif event.key == pygame.K_UP:
+                            if self.playStep("up"):
+                                client_socket.send("up".encode())
+                        elif event.key == pygame.K_DOWN:
+                            if self.playStep("down"):
+                                client_socket.send("down".encode())
+
+            self.drawGrid(screen)
+
+            # Attendre que ce soit au tour du joueur
+            data = client_socket.recv(1024).decode()
+            if data:
+                print(data)  # Affiche les notifications du serveur
+
+        pygame.quit()
+
+if __name__ == "__main__":
+    client = GameClient()
+    client.start_client()
