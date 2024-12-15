@@ -1,0 +1,67 @@
+
+#gameBoard {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(9, 40px);
+    gap: 2px;
+}
+.cell {
+    background-color: greenyellow;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    text-align: center;
+    line-height: 40px;
+    font-size: 14px;
+}
+.snkHead {
+    background-color: red;
+}
+
+.blueCell {
+    background-color: blue;
+}
+
+
+#controlPad {
+    display: grid;
+    grid-template-areas:
+        "up up up"
+        "left ok right"
+        "down down down";
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    width: 150px;
+    margin: 50px auto;
+}
+button {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+}
+button:hover {
+    background-color: #ddd;
+}
+#up {
+    grid-area: up;
+}
+#down {
+    grid-area: down;
+}
+#left {
+    grid-area: left;
+}
+#right {
+    grid-area: right;
+}
+#ok {
+    grid-area: ok;
+    background-color: #007bff;
+    color: white;
+}
+#ok:hover {
+    background-color: #0056b3;
+}
