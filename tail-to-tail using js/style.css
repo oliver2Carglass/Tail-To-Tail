@@ -5,7 +5,7 @@
     grid-template-rows: repeat(15, 40px);
     gap: 2px;
     margin: 50px;
-    /* color: transparent; */
+   
 }
 .cell {
     background-color: greenyellow;
@@ -16,11 +16,21 @@
     line-height: 40px;
     font-size: 14px;
 }
-.snkHead {
+.snkTail {
     background-color: red;
 }
+.snkNext1 {
+    background-color: rgba(255,0,0, 0.7);
+}
+.snkNext2 {
+    background-color: rgba(255, 0, 0,0.5);
+}
+.snkNext3 {
+    background-color: rgba(255, 0, 0,0.3);
+}
 
-.blueCell {
+
+.snkEnemy {
     background-color: blue;
 }
 

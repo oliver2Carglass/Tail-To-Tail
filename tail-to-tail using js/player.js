@@ -1,5 +1,6 @@
 export class Player {
-    constructor(gridSize) {
+    constructor(gridSize, container) {
+        this.container = container
         this.maxIndex=gridSize-1;                                   
         this.position = [Math.floor(gridSize / 2), gridSize - 1];                     // Position initiale : centre ligne, dernière colonne
         this.steps = 0;                                                               // Nombre de pas effectués
@@ -8,15 +9,18 @@ export class Player {
     }
     
 
-    //GETTERS :
+//GETTERS :
     getGrid(){
         return this.grid;
     }
     getPosition(){
         return this.position;
     }
+    getSteps(){
+        return this.steps
+    }
     
-    // Methods :
+// Methods :
 
     move(direction) {
         this.steps+=1;                                                    // increment the number of steps        
@@ -34,7 +38,6 @@ export class Player {
         // Give the number of the step to the current position in grid (it permet to know who hit the second player first when both player hit the other one in the same turn)
         this.grid[this.position[0]][this.position[1]]=this.steps
     }
-
 
 
     canMove(direction) {
@@ -96,4 +99,53 @@ export class Player {
 
         return true;
     }
+
+    getPossibleMoves() {
+        // Return possible move from the current case
+        const directions = ["left", "right", "up", "down"];
+        return directions.filter(direction => this.canMove(direction));
+    }
+
+    displayGrid() {
+        this.container.innerHTML = '';                          // Clear the container
+
+        for (let i = 0; i < this.grid.length; i++) {
+            const rowDiv = document.createElement('div');       // Create a row
+            rowDiv.classList.add('row');
+
+            for (let j = 0; j < this.grid[i].length; j++) {
+                const cellDiv = document.createElement('div'); // Create a cell
+                cellDiv.classList.add('cell');
+
+                // Get the value of the cell
+                const cellValue = this.grid[i][j];
+
+                // Apply CSS class based on the cell value
+                if (cellValue === 0) {
+                    cellDiv.classList.add('snkTail');
+                } else if (cellValue === -2) {
+                    cellDiv.classList.add('snkEnemy');
+                } else if (cellValue === 1) {
+                    cellDiv.classList.add('snkNext1');
+                } else if (cellValue === 2) {
+                    cellDiv.classList.add('snkNext2');
+                } else if (cellValue === 3) {
+                    cellDiv.classList.add('snkNext3');
+                }
+
+                // Optional: Display the value in the cell (for debugging purposes)
+                cellDiv.textContent = cellValue; // Uncomment if you want to display the number
+
+                rowDiv.appendChild(cellDiv); // Add the cell to the row
+            }
+
+            this.container.appendChild(rowDiv); // Add the row to the container
+        }
+    }
+
+    turn(){
+        
+    }
+  
+   
 }

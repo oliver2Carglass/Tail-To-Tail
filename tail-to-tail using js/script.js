@@ -2,7 +2,7 @@ import { Player } from './player.js';
 
 
 
-const gridSize = 9
+const gridSize = 15
 
 // Get the div where we will display the our game
 const gameBoard1 = document.getElementById('gameBoard1');
@@ -26,27 +26,14 @@ adjustGridStyle(gameBoard2, gridSize);
 
 
 
-// Display grid depending on the player grid
-function displayGrid(grid, container) {
-    container.innerHTML = ''; // Vider le conteneur
-    for (let i = 0; i < grid.length; i++) {
-        const rowDiv = document.createElement('div'); // Créer une ligne
-        rowDiv.classList.add('row');
-        for (let j = 0; j < grid[i].length; j++) {
-            const cellDiv = document.createElement('div'); // Créer une cellule
-            cellDiv.classList.add('cell');
-            cellDiv.textContent = grid[i][j] ; // Afficher la valeur ou rien
-            rowDiv.appendChild(cellDiv);
-        }
-        container.appendChild(rowDiv);
-    }
-}
+
+
 
 
 
 // create 2 players        
-const player1= new Player(gridSize)
-const player2= new Player(gridSize)
+const player1= new Player(gridSize, gameBoard1)
+const player2= new Player(gridSize, gameBoard2)
 // player1.move("left")
 // player1.move("up")
 // player1.move("up")
@@ -54,8 +41,8 @@ const player2= new Player(gridSize)
 // player1.canMove("left")
 
 // diplay them in the good spot
-displayGrid(player1.getGrid(), gameBoard1)
-displayGrid(player2.getGrid(), gameBoard2)
+player1.displayGrid()
+player2.displayGrid()
 
 
 
@@ -87,7 +74,7 @@ document.addEventListener('keydown', (event) => {
     if (direction) {
         if (player1.canMove(direction)) { // Vérifier si le mouvement est possible
             player1.move(direction);     // Appliquer le mouvement
-            displayGrid(player1.getGrid(), gameBoard1); // Mettre à jour l'affichage de la grille
+            player1.displayGrid(); // Mettre à jour l'affichage de la grille
         }
     }
 });
