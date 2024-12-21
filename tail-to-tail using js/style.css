@@ -1,9 +1,11 @@
 
-#gameBoard {
+#gameBoard1,#gameBoard2 {
     display: grid;
-    grid-template-columns: repeat(9, 40px);
-    grid-template-rows: repeat(9, 40px);
+    grid-template-columns: repeat(15, 40px);
+    grid-template-rows: repeat(15, 40px);
     gap: 2px;
+    margin: 50px;
+    /* color: transparent; */
 }
 .cell {
     background-color: greenyellow;
