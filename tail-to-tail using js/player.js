@@ -1,5 +1,6 @@
 export class Player {
-    constructor(gridSize, container) {
+    constructor(gridSize, container,movePerTurn) {
+        this.movePerTurn = movePerTurn
         this.container = container
         this.maxIndex=gridSize-1;                                   
         this.position = [Math.floor(gridSize / 2), gridSize - 1];                     // Position initiale : centre ligne, dernière colonne
@@ -22,6 +23,7 @@ export class Player {
     
 // Methods :
 
+    // Update the grid
     move(direction) {
         this.steps+=1;                                                    // increment the number of steps        
         // Move the player on his own grid
@@ -39,7 +41,7 @@ export class Player {
         this.grid[this.position[0]][this.position[1]]=this.steps
     }
 
-
+    // Check if a direction is available for the given direction
     canMove(direction) {
         // Calculer la nouvelle position en fonction de la direction
         let destination;
@@ -85,19 +87,6 @@ export class Player {
         }
         
         return true;                                                                // Direction valid
-        
-
-        // // Vérifier si la nouvelle position est à l'intérieur de la grille (9x9)
-        // if (nextPosition[0] < 0 || nextPosition[0] >= 9 || nextPosition[1] < 0 || nextPosition[1] >= 9) {
-        //     return false;
-        // }
-
-        // // Vérifier si la nouvelle position est déjà occupée
-        // if (this.grid[nextPosition[0]][nextPosition[1]] !== 0) {
-        //     return false;
-        // }
-
-        return true;
     }
 
     getPossibleMoves() {
@@ -125,12 +114,12 @@ export class Player {
                     cellDiv.classList.add('snkTail');
                 } else if (cellValue === -2) {
                     cellDiv.classList.add('snkEnemy');
-                } else if (cellValue === 1) {
-                    cellDiv.classList.add('snkNext1');
-                } else if (cellValue === 2) {
-                    cellDiv.classList.add('snkNext2');
-                } else if (cellValue === 3) {
-                    cellDiv.classList.add('snkNext3');
+                } else if (cellValue === -1 ){
+                    // do nothing
+                } else {
+                    const alpha= (this.movePerTurn-cellValue)*(0.5 / this.movePerTurn) + 0.25 
+                    console.log(alpha)
+                    cellDiv.style.backgroundColor = `rgba(255, 0, 0, ${alpha})`;
                 }
 
                 // Optional: Display the value in the cell (for debugging purposes)
@@ -143,9 +132,42 @@ export class Player {
         }
     }
 
-    turn(){
-        
+    turn() {
+        document.addEventListener('keydown', (event) => {
+            let direction = null;
+    
+            // Associer les touches aux directions
+            switch (event.key) {
+                case 'ArrowLeft':
+                    direction = 'left';
+                    break;
+                case 'ArrowRight':
+                    direction = 'right';
+                    break;
+                case 'ArrowUp':
+                    direction = 'up';
+                    break;
+                case 'ArrowDown':
+                    direction = 'down';
+                    break;
+                default:
+                    break;
+            }
+            if (this.steps>=this.movePerTurn){
+                document.removeEventListener('keydown', keyListener); // Désactiver le listener
+                this.steps=0
+                
+            }
+            // Si une direction est détectée, essayer de déplacer le joueur
+            if (direction && this.canMove(direction)) {
+                this.move(direction);     // Appliquer le mouvement
+                this.displayGrid();       // Mettre à jour l'affichage de la grille
+
+            }
+        });
+    
     }
+    
   
    
 }
