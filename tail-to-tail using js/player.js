@@ -1,5 +1,6 @@
 export class Player {
-    constructor(gridSize, container,movePerTurn) {
+    constructor(gridSize, container,movePerTurn, confirmButton) {
+        this.confirmButton=confirmButton
         this.movePerTurn = movePerTurn
         this.container = container
         this.maxIndex=gridSize-1;                                   
@@ -21,6 +22,24 @@ export class Player {
         return this.steps
     }
     
+
+
+
+    setGrid(newGrid) {
+        if (Array.isArray(newGrid) && newGrid.length === this.grid.length) {
+            // Validate if the new grid matches the size of the current grid
+            const isValid = newGrid.every(
+                row => Array.isArray(row) && row.length === this.grid.length
+            );
+            if (isValid) {
+                this.grid = newGrid;
+            } else {
+                throw new Error("Invalid grid: dimensions must match the original grid.");
+            }
+        } else {
+            throw new Error("Invalid grid: must be a square matrix of the same size.");
+        }
+    }
 // Methods :
 
     // Update the grid
@@ -36,7 +55,7 @@ export class Player {
         } else if (direction === "down") {
             this.position[1] += 1;
         }
-        console.log(this.position)
+        
         // Give the number of the step to the current position in grid (it permet to know who hit the second player first when both player hit the other one in the same turn)
         this.grid[this.position[0]][this.position[1]]=this.steps
     }
@@ -55,6 +74,19 @@ export class Player {
             if (destination === 0){                                                 // 0 mean we have ever cover this case
                 return false
             }
+            else if(destination === -1){
+                return true
+            }
+            else if(destination === -2){
+                return true
+            }
+            else if (destination === this.steps-1){
+                this.undoMove(direction)
+                return false
+            }
+            else{
+                return false
+            }
         }
         else if (direction === "right") {
             if (this.position[0] + 1 > this.maxIndex || this.position[0] + 1 < 0) { // See if the player is outside of the grid
@@ -65,6 +97,20 @@ export class Player {
             if (destination === 0){                                                 // 0 mean we have ever cover this case
                 return false
             }
+            else if(destination === -1){
+                return true
+            }
+            else if(destination === -2){
+                return true
+            }
+            else if (destination === this.steps-1){
+                this.undoMove(direction)
+                return false
+            }
+            else{
+                return false
+            }
+
         }
         else if (direction === "up") {
             if (this.position[1] - 1 > this.maxIndex || this.position[1] - 1 < 0) { // See if the player is outside of the grid
@@ -75,7 +121,22 @@ export class Player {
             if (destination === 0){                                                 // 0 mean we have ever cover this case
                 return false
             }
-        } else if (direction === "down") {
+            else if(destination === -1){
+                return true
+            }
+            else if(destination === -2){
+                return true
+            }
+            else if (destination === this.steps-1){
+                this.undoMove(direction)
+                return false
+            }
+            else{
+                return false
+            }
+
+        }
+        else if (direction === "down") {
             if (this.position[1] + 1 > this.maxIndex || this.position[1] + 1 < 0) { // See if the player is outside of the grid
                 return false;
             }
@@ -84,9 +145,41 @@ export class Player {
             if (destination === 0){                                                 // 0 mean we have ever cover this case
                 return false
             }
+            else if(destination === -1){
+                return true
+            }
+            else if(destination === -2){
+                return true
+            }
+            else if (destination === this.steps-1){
+                this.undoMove(direction)
+                return false
+            }
+            else{
+                return false
+            }
         }
         
         return true;                                                                // Direction valid
+    }
+
+    // permit to undo the last move
+    undoMove(direction){
+        this.grid[this.position[0]][this.position[1]]=-1    
+        this.steps-=1;                                                    // increment the number of steps        
+        // Move the player on his own grid
+        if (direction === "left") {                                     
+            this.position[0] -= 1;
+        } else if (direction === "right") {
+            this.position[0] += 1;
+        } else if (direction === "up") {
+            this.position[1] -= 1;
+        } else if (direction === "down") {
+            this.position[1] += 1;
+        }
+        
+        // Give the number of the step to the current position in grid (it permet to know who hit the second player first when both player hit the other one in the same turn)
+        this.grid[this.position[0]][this.position[1]]=this.steps
     }
 
     getPossibleMoves() {
@@ -118,7 +211,7 @@ export class Player {
                     // do nothing
                 } else {
                     const alpha= (this.movePerTurn-cellValue)*(0.5 / this.movePerTurn) + 0.25 
-                    console.log(alpha)
+                    
                     cellDiv.style.backgroundColor = `rgba(255, 0, 0, ${alpha})`;
                 }
 
@@ -133,40 +226,49 @@ export class Player {
     }
 
     turn() {
-        document.addEventListener('keydown', (event) => {
-            let direction = null;
+        return new Promise((resolve) => { // Use a promise to handle when the turn ends
+            const keyListener = (event) => { // Define the key listener
+                let direction = null;
     
-            // Associer les touches aux directions
-            switch (event.key) {
-                case 'ArrowLeft':
-                    direction = 'left';
-                    break;
-                case 'ArrowRight':
-                    direction = 'right';
-                    break;
-                case 'ArrowUp':
-                    direction = 'up';
-                    break;
-                case 'ArrowDown':
-                    direction = 'down';
-                    break;
-                default:
-                    break;
-            }
-            if (this.steps>=this.movePerTurn){
-                document.removeEventListener('keydown', keyListener); // Désactiver le listener
-                this.steps=0
-                
-            }
-            // Si une direction est détectée, essayer de déplacer le joueur
-            if (direction && this.canMove(direction)) {
-                this.move(direction);     // Appliquer le mouvement
-                this.displayGrid();       // Mettre à jour l'affichage de la grille
-
-            }
+                // Map arrow keys to movement directions
+                switch (event.key) {
+                    case 'ArrowLeft':
+                        direction = 'left';
+                        break;
+                    case 'ArrowRight':
+                        direction = 'right';
+                        break;
+                    case 'ArrowUp':
+                        direction = 'up';
+                        break;
+                    case 'ArrowDown':
+                        direction = 'down';
+                        break;
+                    default:
+                        break;
+                }
+    
+                // Check if the maximum number of moves for this turn has been reached
+                if (this.steps >= this.movePerTurn) {
+                    document.removeEventListener('keydown', keyListener); // Remove the event listener
+                    this.steps = 0; // Reset the step counter
+                    this.confirmButton.classList.add('ready') // ne marche pas ???
+                    resolve(); // Resolve the promise to indicate the turn has ended
+                    return;
+                }
+    
+                // If a valid direction is detected, attempt to move the player
+                if (direction && this.canMove(direction)) {
+                    this.move(direction);     // Apply the movement
+                    this.displayGrid();       // Update the grid display
+                }
+            };
+    
+            // Attach the key listener to the document
+            document.addEventListener('keydown', keyListener);
         });
-    
     }
+    
     
   
    
