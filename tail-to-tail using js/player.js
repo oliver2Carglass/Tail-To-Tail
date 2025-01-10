@@ -225,11 +225,16 @@ export class Player {
         }
     }
 
+    resetTurn(){
+        
+    }
     turn() {
         return new Promise((resolve) => { // Use a promise to handle when the turn ends
+            this.confirmButton.classList.remove('ready'); // S'assurer que le bouton n'est pas prêt au début
+            this.confirmButton.classList.add('notReady'); // S'assurer que le bouton n'est pas prêt au début
+            
             const keyListener = (event) => { // Define the key listener
                 let direction = null;
-    
                 // Map arrow keys to movement directions
                 switch (event.key) {
                     case 'ArrowLeft':
@@ -247,25 +252,34 @@ export class Player {
                     default:
                         break;
                 }
-    
-                // Check if the maximum number of moves for this turn has been reached
-                if (this.steps >= this.movePerTurn) {
-                    document.removeEventListener('keydown', keyListener); // Remove the event listener
-                    this.steps = 0; // Reset the step counter
-                    this.confirmButton.classList.add('ready') // ne marche pas ???
-                    resolve(); // Resolve the promise to indicate the turn has ended
-                    return;
-                }
-    
+
+                
                 // If a valid direction is detected, attempt to move the player
                 if (direction && this.canMove(direction)) {
                     this.move(direction);     // Apply the movement
                     this.displayGrid();       // Update the grid display
                 }
+                
+                // Check if the maximum number of moves for this turn has been reached
+                if (this.steps >= this.movePerTurn) {
+                    document.removeEventListener('keydown', keyListener); // Remove the event listener
+                    this.steps = 0; // Reset the step counter
+                    this.confirmButton.classList.add('ready') // ne marche pas ???
+                }
             };
-    
-            // Attach the key listener to the document
-            document.addEventListener('keydown', keyListener);
+            // the moves have been done
+            // Ajouter un écouteur pour le clic sur le bouton
+            const buttonListener = () => {
+                this.confirmButton.removeEventListener('click', buttonListener); // Retirer l'écouteur de clic
+                this.confirmButton.classList.add('notReady') // ne marche pas ???
+                this.confirmButton.classList.remove('ready') // ne marche pas ???
+                console.log("hhh")
+                resolve(); // Résoudre la promesse pour signaler la fin du tour
+            };
+            // Attacher les écouteurs d'événements
+            document.addEventListener('keydown', keyListener); // Écouter les touches pour les déplacements
+            this.confirmButton.addEventListener('click', buttonListener); // Écouter le clic du bouton
+            
         });
     }
     

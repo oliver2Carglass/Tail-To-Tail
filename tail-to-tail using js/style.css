@@ -41,7 +41,7 @@
 }
 
 
-#controlPad {
+#controlPad, #controlPad1 {
     display: grid;
     grid-template-areas:
         "up up up"
@@ -57,7 +57,7 @@ button:hover {
     background-color: #ddd;
 }
 
-#ok {
+#ok2,#ok1 {
     z-index: 10; 
     position: absolute;
     height: 50px;
@@ -66,6 +66,10 @@ button:hover {
     background-color: #007bff;
     color: white;
 }
-#ok:hover {
+#ok2:hover, #ok1:hover {
     background-color: #0056b3;
+}
+
+#ok1{
+    background-color: red;
 }
